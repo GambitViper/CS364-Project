@@ -29,8 +29,8 @@ INSERT INTO Collection(collection_id, collection_size) VALUES(1, 0);
 -- Add Decks into collections
 INSERT INTO Deck(deck_id, deck_name, deck_wins, deck_losses, creation_date) VALUES(1, 'noob slayer', 3, 5, '05/03/2018');
 
--- Add card to user collection
-INSERT INTO In_Collection(card_id, collection_id, amount) VALUES(435289, 1, 2);
+-- Add Card to user collection
+INSERT INTO In_Collection(card_id, collection_id, amount) VALUES(435290, 1, 2);
 
 --Add one to card count
 UPDATE In_Collection
@@ -66,7 +66,7 @@ FROM User NATURAL JOIN In_Collection NATURAL JOIN Card
 WHERE User.user_id == 1; --replace 1 with user searching
 
 -- Cards in collection not in Decks
-SELECT Card.*
+SELECT Card.*, In_Collection.amount
 FROM User NATURAL JOIN In_Collection LEFT OUTER JOIN In_Deck ON In_Deck.card_id == In_Collection.card_id NATURAL JOIN Card
 WHERE deck_id IS NULL AND User.user_id == 1; -- replace 1 with user searching
 
