@@ -185,7 +185,6 @@
 
           <!-- Page Heading -->
           <h1 class="h3 mb-2 text-gray-800">Your Cards</h1>
-          <p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below. For more information about DataTables, please visit the <a target="_blank" href="https://datatables.net">official DataTables documentation</a>.</p>
 
           <!-- Content Row -->
           <div class="row">
@@ -221,13 +220,11 @@
                                                                                     FROM Card) AS card_count";
                         $rs = $db->query($sql);
                             
-                        while($row = $rs->fetchArray(SQLITE3_ASSOC)){
-                            echo "
-                                  <div class=\"progress progress-sm mr-2\">
-                                    <div class=\"progress-bar bg-info\" role=\"progressbar\" style=\"width:".$row['percent_collected']. "%\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"100\"></div>
-                                  </div>
-                                 ";
-                        }
+                        echo "
+                              <div class=\"progress progress-sm mr-2\">
+                                <div class=\"progress-bar bg-info\" role=\"progressbar\" style=\"width:\"" .$row['percent_collected']. "%\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"100\"></div>
+                              </div>
+                             ";
                       ?>
                         </div>
                       </div>
@@ -241,7 +238,7 @@
             </div>
               
               
-            <!-- Pending Requests Card Example -->
+            <!-- Collection Size -->
             <div class="col-xl-3 col-md-6 mb-4">
               <div class="card border-left-warning shadow h-100 py-2">
                 <div class="card-body">
@@ -249,14 +246,17 @@
                     <div class="col mr-2">
                       <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Colletion Size</div>
                       <?php
-                        $sql = "SELECT count(*) AS number
-                                  FROM User NATURAL JOIN In_Collection
-                                  WHERE User.user_id == 1 ";
-                        $rs = $db->query($sql);
-                        if ($row['percent_collected'] == null){ 
-                            echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">0</div>";
-                        } else{
-                            echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">". $row['percent_collected']. "</div>";
+                        $sql = "SELECT user_count.number
+                                FROM (SELECT count(*) AS number
+                                      FROM User NATURAL JOIN In_Collection NATURAL JOIN Card
+                                      WHERE User.user_id == 1 ) AS user_count";
+                        $rs1 = $db->query($sql);
+                        while($row = $rs1->fetchArray(SQLITE3_ASSOC)){
+                            if ($row['user_count.number'] == null){ 
+                                echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">1000</div>";
+                            } else{
+                                echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">". $row['user_count.number']. "</div>";
+                            }
                         }
                       ?>
                     </div>
@@ -281,12 +281,14 @@
                                 FROM User NATURAL JOIN In_Collection NATURAL JOIN Card
                                 WHERE User.user_id == 1;";
                         
-                        $rs = $db->query($sql);
+                        $rs2 = $db->query($sql);
                         
-                        if ($row['usdPrice'] == null){ 
-                            echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">$0</div>";
-                        } else{
-                            echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">$". $row['usdPrice']. "</div>";
+                        while($row = $rs2->fetchArray(SQLITE3_ASSOC)){
+                            if ($row['usdPrice'] == null){ 
+                                echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">$0</div>";
+                            } else{
+                                echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">$". $row['usdPrice']. "</div>";
+                            }
                         }
                             
                       ?>
@@ -312,12 +314,14 @@
                                 FROM User NATURAL JOIN In_Collection NATURAL JOIN Card
                                 WHERE User.user_id == 1;";
                         
-                        $rs = $db->query($sql);
+                        $rs3 = $db->query($sql);
                         
-                        if ($row['usdPrice'] == null){ 
-                            echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">$0</div>";
-                        } else{
-                            echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">$". $row['usdPriceFoil']. "</div>";
+                        while($row = $rs3->fetchArray(SQLITE3_ASSOC)){
+                            if ($row['usdPriceFoil'] == null){ 
+                                echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">$0</div>";
+                            } else{
+                                echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">$". $row['usdPriceFoil']. "</div>";
+                            }
                         }
                             
                       ?>
@@ -332,101 +336,6 @@
             </div>
           </div>
 
-          </div>
-            
-          <!-- Content Row -->
-          <!-- DataTales Example -->
-          <div class="card shadow mb-4">
-            <div class="card-header py-3">
-              <h6 class="m-0 font-weight-bold text-primary">Cards not in decks</h6>
-            </div>
-            <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                  <thead>
-                    <tr>
-                      <th>Card ID</th>
-                      <th>Card Name</th>
-                      <th># of Cards</th>
-                      <th>Mana Cost</th>
-                      <th>Rarity</th>
-                      <th>CMC</th>
-                      <th>Card Type</th>
-                      <th>Artist</th>
-                      <th>Set Code</th>
-                      <th>Card #</th>
-                      <th>Price</th>
-                      <th>Foil Price</th>
-                      <th>Image</th>
-                    </tr>
-                  </thead>
-                  <tfoot>
-                    <tr>
-                      <th>Card ID</th>
-                      <th>Card Name</th>
-                      <th># of Cards</th>
-                      <th>Mana Cost</th>
-                      <th>Rarity</th>
-                      <th>CMC</th>
-                      <th>Card Type</th>
-                      <th>Artist</th>
-                      <th>Set Code</th>
-                      <th>Card #</th>
-                      <th>Price</th>
-                      <th>Foil Price</th>
-                      <th>Image</th>
-                  </tfoot>
-                  <tbody>
-                      <?php
-                        $sql = "SELECT Card.card_id, card_number, card_name, mana_cost, rarity, cmc, card_type, artist, set_code, usd_price, usd_foil_price, image_uri 
-                                FROM User NATURAL JOIN In_Collection LEFT OUTER JOIN In_Deck ON In_Deck.card_id == In_Collection.card_id NATURAL JOIN Card
-                                WHERE deck_id IS NULL AND User.user_id == 1;";
-                      
-                        $rs = $db->query($sql);
-                            
-                        while($row = $rs->fetchArray(SQLITE3_ASSOC)){
-                            echo "<tr>";
-                            echo "<td>". $row['card_id']. "</td>";
-                            echo "<td>". $row['card_name']. "</td>";  
-                            echo "<td>". $row['mana_cost']. "</td>";  
-                            echo "<td>". $row['rarity']. "</td>";  
-                            echo "<td>". $row['cmc']. "</td>";  
-                            echo "<td>". $row['card_type']. "</td>";  
-                            echo "<td>". $row['artist']. "</td>";  
-                            echo "<td>". $row['set_code']. "</td>"; 
-                            echo "<td>". $row['card_number']. "</td>"; 
-                            echo "<td>". $row['usd_price']. "</td>";  
-                            echo "<td>". $row['usd_foil_price']. "</td>";  
-                            echo "<td><img src=\"". $row['image_uri']. "\" height=\"150\" width=\"50\"></td>";
-                            echo "
-                              <td>
-                                <form method=\"post\" action=\"allCards.php\"> 
-                                <input type=\"text\" name=\"cardIdAdd\" value=\"". $row['card_id']. "\" hidden />
-                                <button type=\"submit\" class=\"btn btn-success btn-icon-split\">
-                                    <span class=\"icon text-white-50\">
-                                      <i class=\"fas fa-check\"></i>
-                                    </span>
-                                    <span class=\"text\">Add Card</span>
-                                </button>
-                                </form>
-                              </td>
-                                <form method=\"post\" action=\"allCards.php\"> 
-                                <input type=\"text\" name=\"cardIdRemove\" value=\"". $row['card_id']. "\" hidden />
-                                <button type=\"submit\" class=\"btn btn-danger btn-icon-split\">
-                                    <span class=\"icon text-white-50\">
-                                      <i class=\"fas fa-trash\"></i>
-                                    </span>
-                                    <span class=\"text\">Remove Card</span>
-                                </button>
-                                </form>
-                              </td>";
-                            echo "</tr>";
-                        }
-                      ?>
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
 
           <!-- Content Row -->
@@ -475,7 +384,7 @@
                   </tfoot>
                   <tbody>
                       <?php
-                        $sql = "SELECT Card.*
+                        $sql = "SELECT Card.*, amount
                                 FROM User NATURAL JOIN In_Collection LEFT OUTER JOIN In_Deck ON In_Deck.card_id == In_Collection.card_id NATURAL JOIN Card
                                 WHERE User.user_id == 1;";
                         $rs = $db->query($sql);
@@ -484,6 +393,7 @@
                             echo "<tr>";
                             echo "<td>". $row['card_id']. "</td>";
                             echo "<td>". $row['card_name']. "</td>";  
+                            echo "<td>". $row['amount']. "</td>";  
                             echo "<td>". $row['mana_cost']. "</td>";  
                             echo "<td>". $row['rarity']. "</td>";  
                             echo "<td>". $row['cmc']. "</td>";  
@@ -493,10 +403,10 @@
                             echo "<td>". $row['card_number']. "</td>"; 
                             echo "<td>". $row['usd_price']. "</td>";  
                             echo "<td>". $row['usd_foil_price']. "</td>";  
-                            echo "<td><img src=\"". $row['image_uri']. "\" height=\"150\" width=\"50\"></td>";
+                            echo "<td><img src=\"". $row['image_uri']. "\" height=\"150\" width=\"100\"></td>";
                             echo "
                               <td>
-                                <form method=\"post\" action=\"allCards.php\"> 
+                                <form method=\"post\" action=\"cards.php\"> 
                                 <input type=\"text\" name=\"cardIdAdd\" value=\"". $row['card_id']. "\" hidden />
                                 <button type=\"submit\" class=\"btn btn-success btn-icon-split\">
                                     <span class=\"icon text-white-50\">
@@ -505,8 +415,7 @@
                                     <span class=\"text\">Add Card</span>
                                 </button>
                                 </form>
-                              </td>
-                                <form method=\"post\" action=\"allCards.php\"> 
+                                <form method=\"post\" action=\"cards.php\"> 
                                 <input type=\"text\" name=\"cardIdRemove\" value=\"". $row['card_id']. "\" hidden />
                                 <button type=\"submit\" class=\"btn btn-danger btn-icon-split\">
                                     <span class=\"icon text-white-50\">
@@ -516,6 +425,80 @@
                                 </button>
                                 </form>
                               </td>";
+                            echo "</tr>";
+                        }
+                      ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+            
+          <!-- Content Row -->
+          <!-- DataTales Example -->
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Cards not in decks</h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Card ID</th>
+                      <th>Card Name</th>
+                      <th># of Cards</th>
+                      <th>Mana Cost</th>
+                      <th>Rarity</th>
+                      <th>CMC</th>
+                      <th>Card Type</th>
+                      <th>Artist</th>
+                      <th>Set Code</th>
+                      <th>Card #</th>
+                      <th>Price</th>
+                      <th>Foil Price</th>
+                      <th>Image</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Card ID</th>
+                      <th>Card Name</th>
+                      <th># of Cards</th>
+                      <th>Mana Cost</th>
+                      <th>Rarity</th>
+                      <th>CMC</th>
+                      <th>Card Type</th>
+                      <th>Artist</th>
+                      <th>Set Code</th>
+                      <th>Card #</th>
+                      <th>Price</th>
+                      <th>Foil Price</th>
+                      <th>Image</th>
+                  </tfoot>
+                  <tbody>
+                      <?php
+                        $sql = "SELECT Card.card_id, card_number, amount, card_name, mana_cost, rarity, cmc, card_type, artist, set_code, usd_price, usd_foil_price, image_uri 
+                                FROM User NATURAL JOIN In_Collection LEFT OUTER JOIN In_Deck ON In_Deck.card_id == In_Collection.card_id NATURAL JOIN Card
+                                WHERE deck_id IS NULL AND User.user_id == 1;";
+                      
+                        $rs = $db->query($sql);
+                            
+                        while($row = $rs->fetchArray(SQLITE3_ASSOC)){
+                            echo "<tr>";
+                            echo "<td>". $row['card_id']. "</td>";
+                            echo "<td>". $row['card_name']. "</td>";  
+                            echo "<td>". $row['amount']. "</td>"; 
+                            echo "<td>". $row['mana_cost']. "</td>";  
+                            echo "<td>". $row['rarity']. "</td>";  
+                            echo "<td>". $row['cmc']. "</td>";  
+                            echo "<td>". $row['card_type']. "</td>";  
+                            echo "<td>". $row['artist']. "</td>";  
+                            echo "<td>". $row['set_code']. "</td>"; 
+                            echo "<td>". $row['card_number']. "</td>"; 
+                            echo "<td>". $row['usd_price']. "</td>";  
+                            echo "<td>". $row['usd_foil_price']. "</td>";  
+                            echo "<td><img src=\"". $row['image_uri']. "\" height=\"150\" width=\"100\"></td>";
                             echo "</tr>";
                         }
                       ?>

@@ -153,7 +153,6 @@
 
           <!-- Page Heading -->
           <h1 class="h3 mb-2 text-gray-800">Your Decks</h1>
-          <p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below. For more information about DataTables, please visit the <a target="_blank" href="https://datatables.net">official DataTables documentation</a>.</p>
 
           <a href="#" class="btn btn-success btn-icon-split">
             <span class="icon text-white-50">
@@ -171,52 +170,67 @@
             
           <!-- DataTales Example -->
           <div class="card shadow mb-4">
-            <div class="card-header py-3">
-              <h6 class="m-0 font-weight-bold text-primary">Noob Slayers W:1 L:1 Created: 4.4.19</h6>
+              <?php
+                echo '<div class="card-header py-3">';
+                $sql = "SELECT deck_id, deck_name, deck_wins, deck_losses, creation_date, card_name, card_amount
+                        FROM User NATURAL JOIN Deck NATURAL JOIN In_Deck NATURAL JOIN Card
+                        WHERE User.user_id == 1";
+                
+                $rs1 = $db->query($sql);
+                while($row = $rs1->fetchArray(SQLITE3_ASSOC)){
+                    if ($row['deck_id'] != null){ 
+                        echo "<h6 class=\"m-0 font-weight-bold text-primary\">Deck ID: ".$row['deck_id']." Deck Name: ". $row['deck_name']. " W: ". $row['deck_wins']. " L: ". $row['deck_losses']. " Created: ". $row['creation_date'] ."</h6>";
+                    } else{
+                        echo "<h6 class=\"m-0 font-weight-bold text-primary\">No Deck</h6>";
+                    }
+                }
+                
+                
+                echo '</div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                        <th>Card Name</th>
+                                        <th>Amount</th>
+                                        <th>Add/Remove Card</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                        <th>Card Name</th>
+                                        <th>Amount</th>
+                                        <th>Add/Remove Card</th>
+                                        </tr>
+                                    </tfoot>
+                                    <tbody>';
+              
+                                    while($row = $rs1->fetchArray(SQLITE3_ASSOC)){
+                                        echo '<tr>';
+                                        echo '<th>'. $row['card_name']. '</th>';
+                                        echo '<th>'. $row['card_amount']. '</th>';
+                                        echo '<td>
+                                                <a href="#" class="btn btn-success btn-icon-split">
+                                                <span class="icon text-white-50">
+                                                <i class="fas fa-check"></i>
+                                                </span>
+                                                </a>
+                                                <a href="#" class="btn btn-danger btn-icon-split">
+                                                <span class="icon text-white-50">
+                                                <i class="fas fa-trash"></i>
+                                                </span>
+                                                </a>
+                                            </ td>
+                                            </tr>';
+                        }
+              ?>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+             </div>
             </div>
-            <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                  <thead>
-                    <tr>
-                      <th>Card Name</th>
-                      <th>Amount</th>
-                      <th>Add/Remove Card</th>
-                    </tr>
-                  </thead>
-                  <tfoot>
-                    <tr>
-                      <th>Card Name</th>
-                      <th>Amount</th>
-                      <th>Add/Remove Card</th>
-                    </tr>
-                  </tfoot>
-                  <tbody>
-                    <tr>
-                      <th>yolo</th>
-                      <th>5</th>
-                      <td>
-                          <a href="#" class="btn btn-success btn-icon-split">
-                            <span class="icon text-white-50">
-                              <i class="fas fa-check"></i>
-                            </span>
-                          </a>
-                          <a href="#" class="btn btn-danger btn-icon-split">
-                            <span class="icon text-white-50">
-                              <i class="fas fa-trash"></i>
-                            </span>
-                          </a>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-          
         </div>
 
       </div>
