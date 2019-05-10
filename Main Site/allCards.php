@@ -1,4 +1,6 @@
 <?php
+
+   //CONNECTS TO DATABASE
    class MyDB extends SQLite3 {
       function __construct() {
          $this->open('mtg.db');
@@ -8,18 +10,41 @@
    if(!$db) {
       echo $db->lastErrorMsg();
    } else {
-      echo "Opened database successfully\n";
+      //echo "Opened database successfully\n";
    }
 
+   //ADD CARDS TO YOUR COLLECTION
    if (isset($_POST["cardId"])) {
        
-    $newCardId = htmlspecialchars($_POST["cardId"]);
+        $newCardId = htmlspecialchars($_POST["cardId"]);
+
+        $sql = "SELECT user_id, card_id, collection_id
+                FROM User NATURAL JOIN In_Collection
+                WHERE user_id == 1 AND collection_id == 1 AND card_id == {$newCardId};";
+
+        $rs = $db->query($sql);
+
+        $row = $rs->fetchArray(SQLITE3_ASSOC);
+
+        if(!$row) {
+
+            $sql = "INSERT INTO In_Collection(card_id, collection_id, amount) VALUES({$newCardId}, 1, 1);";
+
+            $db->query($sql);
+            //echo "I added a card";
+
+        } else {
+
+            $sql = "UPDATE In_Collection
+                    SET amount = 1 + (SELECT amount
+                                      FROM In_Collection 
+                                      WHERE collection_id == 1 AND card_id == {$newCardId})
+                    WHERE card_id = {$newCardId} AND collection_id == 1;";
+
+            $db->query($sql);
+            //echo "I updated collection";
+        }
        
-    $sql = "INSERT INTO In_Deck(deck_id, card_id) VALUES(1, {$newCardId});";
-       
-    $db->exec($sql);
-       
-    echo "I added a card";
    }
 ?>
 
@@ -162,13 +187,9 @@
         <div class="container-fluid">
           <!-- Page Heading -->
           <h1 class="h3 mb-2 text-gray-800">All Magic the Gathering Cards</h1>
-          <p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below. For more information about DataTables, please visit the <a target="_blank" href="https://datatables.net">official DataTables documentation</a>.</p>
 
           <!-- DataTales Example -->
           <div class="card shadow mb-4">
-            <div class="card-header py-3">
-              <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
-            </div>
             <div class="card-body">
               <div class="table-responsive">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
@@ -207,31 +228,6 @@
                   </tfoot>
                   <tbody>
                   <tbody>
-                      <!--
-                    <tr>
-                      <td>100</td>
-                      <td>Donna Snider</td>
-                      <td>Customer Support</td>
-                      <td>New York</td>
-                      <td>27</td>
-                      <td>2011/01/25</td>
-                      <td>$112,000</td>
-                      <td>Customer Support</td>
-                      <td>New York</td>
-                      <td>27</td>
-                      <td>2011/01/25</td>
-                      <td>hi</td>
-                      <td>
-                        <form action="allCards.php" method="post">
-                            <a href="#" class="btn btn-success btn-icon-split">
-                            <span class="icon text-white-50">
-                              <i class="fas fa-check"></i>
-                            </span>
-                            <span class="text">Add Card</span>
-                            </a>
-                        </form>
-                      </td> 
-                    </tr> -->
                       <?php
                         $sql = "SELECT card_id, card_number, card_name, mana_cost, rarity, cmc, card_type, artist, set_code, usd_price, usd_foil_price, image_uri FROM Card";
                         $rs = $db->query($sql);
@@ -258,7 +254,7 @@
                                     <span class=\"icon text-white-50\">
                                       <i class=\"fas fa-check\"></i>
                                     </span>
-                                    <span class=\"text\">Add Card</span>
+                                    <span class=\"text\">Add Card to collection</span>
                                 </button>
                                 </form>
                               </td>";

@@ -1,4 +1,5 @@
 <?php
+   //DATABASE CONNECTION
    class MyDB extends SQLite3 {
       function __construct() {
          $this->open('mtg.db');
@@ -8,7 +9,73 @@
    if(!$db) {
       echo $db->lastErrorMsg();
    } else {
-      echo "Opened database successfully\n";
+      //echo "Opened database successfully\n";
+   }
+
+   //THIS WILL ADD A CARD FROM THE DECK
+   if (isset($_POST["addCardFromDeck"])) {
+       
+    $addedCard = htmlspecialchars($_POST["addCardFromDeck"]);
+       
+    $sql = "UPDATE In_Deck
+            SET card_amount = 1 + (SELECT card_amount
+                                   FROM In_Deck
+                                   WHERE deck_id == 1 AND card_id == {$addedCard})
+            WHERE card_id == {$addedCard} AND deck_id == 1";
+       
+    $db->query($sql);
+       
+    //echo "I added a card to deck";
+   }
+
+   //THIS WILL REMOVE A CARD FROM THE DECK
+   if (isset($_POST["removeCardFromDeck"])) {
+       
+    $removedCard = htmlspecialchars($_POST["removeCardFromDeck"]);
+       
+    $sql = "UPDATE In_Deck
+            SET card_amount = (SELECT card_amount
+                               FROM In_Deck
+                               WHERE deck_id == 1 AND card_id == {$removedCard}) - 1
+            WHERE card_id == {$removedCard} AND deck_id == 1";
+       
+    $db->query($sql);
+       
+    $sql = "DELETE FROM In_Deck
+            WHERE card_amount <= 0;";
+    $db->query($sql);
+    //echo "I removed a card from deck";
+   }
+
+   //ADD DECK LOSS
+   if (isset($_POST["addDeckLoss"])) {
+       
+    $addDeckLoss = htmlspecialchars($_POST["addDeckLoss"]);
+       
+    $sql = "UPDATE Deck
+            SET deck_losses = 1 + (SELECT deck_losses
+                                   FROM In_Deck
+                                   WHERE deck_id == 1)
+            WHERE deck_id == 1;";
+       
+    $db->query($sql);
+       
+    //echo "I added a deck loss";
+   }
+
+   //ADD DECK WIN
+   if (isset($_POST["addDeckWin"])) {
+       
+    $addDeckLoss = htmlspecialchars($_POST["addDeckWin"]);
+       
+    $sql = "UPDATE Deck
+            SET deck_wins = 1 + (SELECT deck_wins
+                                   FROM In_Deck
+                                   WHERE deck_id == 1)
+            WHERE deck_id == 1;";
+       
+    $db->query($sql);
+    //echo "I added a deck win";
    }
 ?>
 
@@ -153,7 +220,7 @@
 
           <!-- Page Heading -->
           <h1 class="h3 mb-2 text-gray-800">Your Decks</h1>
-
+<!--
           <a href="#" class="btn btn-success btn-icon-split">
             <span class="icon text-white-50">
               <i class="fas fa-check"></i>
@@ -166,13 +233,13 @@
               <i class="fas fa-trash"></i>
             </span>
             <span class="text">Remove Deck</span>
-          </a>
+          </a>-->
             
           <!-- DataTales Example -->
           <div class="card shadow mb-4">
               <?php
                 echo '<div class="card-header py-3">';
-                $sql = "SELECT deck_id, deck_name, deck_wins, deck_losses, creation_date, card_name, card_amount
+                $sql = "SELECT deck_id, deck_name, deck_wins, deck_losses, creation_date, card_name, card_amount, card_id
                         FROM User NATURAL JOIN Deck NATURAL JOIN In_Deck NATURAL JOIN Card
                         WHERE User.user_id == 1";
                 
@@ -180,6 +247,7 @@
                 while($row = $rs1->fetchArray(SQLITE3_ASSOC)){
                     if ($row['deck_id'] != null){ 
                         echo "<h6 class=\"m-0 font-weight-bold text-primary\">Deck ID: ".$row['deck_id']." Deck Name: ". $row['deck_name']. " W: ". $row['deck_wins']. " L: ". $row['deck_losses']. " Created: ". $row['creation_date'] ."</h6>";
+                        break;
                     } else{
                         echo "<h6 class=\"m-0 font-weight-bold text-primary\">No Deck</h6>";
                     }
@@ -210,23 +278,50 @@
                                         echo '<tr>';
                                         echo '<th>'. $row['card_name']. '</th>';
                                         echo '<th>'. $row['card_amount']. '</th>';
-                                        echo '<td>
-                                                <a href="#" class="btn btn-success btn-icon-split">
-                                                <span class="icon text-white-50">
-                                                <i class="fas fa-check"></i>
-                                                </span>
-                                                </a>
-                                                <a href="#" class="btn btn-danger btn-icon-split">
-                                                <span class="icon text-white-50">
-                                                <i class="fas fa-trash"></i>
-                                                </span>
-                                                </a>
+                                        echo "<td>
+                                                <form method=\"post\" action=\"decks.php\">
+                                                    <input type=\"text\" name=\"addCardFromDeck\" value=\"". $row['card_id']. "\" hidden />
+                                                    <button type=\"submit\" class=\"btn btn-success btn-icon-split\">
+                                                        <span class=\"icon text-white-50\">
+                                                            <i class=\"fas fa-check\"></i>
+                                                        </span>
+                                                        <span class=\"text\">+1</span>
+                                                    </button>
+                                                </form>
+                                                <form method=\"post\" action=\"decks.php\">
+                                                    <input type=\"text\" name=\"removeCardFromDeck\" value=\"". $row['card_id']. "\" hidden />
+                                                    <button type=\"submit\" class=\"btn btn-danger btn-icon-split\">
+                                                        <span class=\"icon text-white-50\">
+                                                            <i class=\"fas fa-trash\"></i>
+                                                        </span>
+                                                    <span class=\"text\">-1</span>
+                                                </button>
+                                                </form>
                                             </ td>
-                                            </tr>';
+                                            </tr>";
                         }
               ?>
                                   </tbody>
                                 </table>
+            
+                                <form method="post" action="decks.php"> 
+                                    <input type="text" name="addDeckWin" value="1" hidden >
+                                    <button type="submit" class="btn btn-success btn-icon-split">
+                                        <span class="icon text-white-50">
+                                          <i class="fas fa-check"></i>
+                                        </span>
+                                        <span class="text">Add Deck Win</span>
+                                    </button>
+                                </form>
+                                <form method="post" action="decks.php"> 
+                                    <input type="text" name="addDeckLoss" value="1" hidden />
+                                    <button type="submit" class="btn btn-danger btn-icon-split">
+                                        <span class="icon text-white-50">
+                                          <i class="fas fa-trash"></i>
+                                        </span>
+                                        <span class="text">Add Deck Loss</span>
+                                    </button>
+                                </form>
                               </div>
                             </div>
              </div>

@@ -1,4 +1,6 @@
 <?php
+
+   //CONNECTS TO DATABASE
    class MyDB extends SQLite3 {
       function __construct() {
          $this->open('mtg.db');
@@ -8,9 +10,10 @@
    if(!$db) {
       echo $db->lastErrorMsg();
    } else {
-      echo "Opened database successfully\n";
+      //echo "Opened database successfully\n";
    }
 
+   //ADDS CARD TO COLLECTION
    if (isset($_POST["cardIdAdd"])) {
        
     $newCardIdAdd = htmlspecialchars($_POST["cardIdAdd"]);
@@ -21,11 +24,12 @@
                                WHERE collection_id == 1 AND card_id == {$newCardIdAdd})
              WHERE card_id = {$newCardIdAdd};";
        
-    $db->query($sql);
+    $db->exec($sql);
        
-    echo "I added a card";
+    //echo "I added a card";
    }
 
+   //REMOVES CARD AND CHECK IF YOU HAVE ZERO CARDS AND REMOVES IT FROM COLLECTION
    if (isset($_POST["cardIdRemove"])) {
        
     $newCardIdRemove = htmlspecialchars($_POST["cardIdRemove"]);
@@ -37,9 +41,25 @@
             WHERE card_id == {$newCardIdRemove}";
        
     $db->query($sql);
+    
+    $sql = "DELETE FROM In_Collection
+            WHERE amount <= 0;";
+    $db->query($sql);
        
-    echo "I removed a card";
+    //echo "I removed a card";
    }
+
+   if (isset($_POST["addCardToDeck"])) {
+       
+    $newCardId = htmlspecialchars($_POST["addCardToDeck"]);
+    
+    $sql = "INSERT INTO In_Deck(deck_id, card_id, card_amount) VALUES(1, {$newCardId}, 1);";
+       
+    $rs = $db->query($sql);
+       
+    //echo "I added a card to the deck";
+   }
+   
 ?>
 
 <!DOCTYPE html>
@@ -195,7 +215,7 @@
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Amount of cards Gathered</div>
+                      <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Amount of cards Gathered (Unique)</div>
                       <div class="row no-gutters align-items-center">
                         <div class="col-auto">
                       <?php
@@ -207,7 +227,7 @@
                         $rs = $db->query($sql);
                             
                         while($row = $rs->fetchArray(SQLITE3_ASSOC)){
-                            echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">". $row['percent_collected']. "</div>";
+                            echo "<div class=\"h5 mb-0 font-weight-bold text-gray-800\">". number_format((float)$row['percent_collected'], 2, '.', ''). "%</div>";
                         }
                       ?>
                         </div>
@@ -220,11 +240,13 @@
                                                                                     FROM Card) AS card_count";
                         $rs = $db->query($sql);
                             
+                        while($row = $rs->fetchArray(SQLITE3_ASSOC)){
                         echo "
                               <div class=\"progress progress-sm mr-2\">
-                                <div class=\"progress-bar bg-info\" role=\"progressbar\" style=\"width:\"" .$row['percent_collected']. "%\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"100\"></div>
+                                <div class=\"progress-bar bg-info\" role=\"progressbar\" style=\" width:". round($row['percent_collected'],2). "%\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"100\"></div>
                               </div>
                              ";
+                        }
                       ?>
                         </div>
                       </div>
@@ -244,7 +266,7 @@
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Colletion Size</div>
+                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Colletion Size (Unique)</div>
                       <?php
                         $sql = "SELECT user_count.number
                                 FROM (SELECT count(*) AS number
@@ -386,7 +408,8 @@
                       <?php
                         $sql = "SELECT Card.*, amount
                                 FROM User NATURAL JOIN In_Collection LEFT OUTER JOIN In_Deck ON In_Deck.card_id == In_Collection.card_id NATURAL JOIN Card
-                                WHERE User.user_id == 1;";
+                                WHERE User.user_id == 1
+                                ORDER BY Card.card_name;";
                         $rs = $db->query($sql);
                             
                         while($row = $rs->fetchArray(SQLITE3_ASSOC)){
@@ -412,7 +435,7 @@
                                     <span class=\"icon text-white-50\">
                                       <i class=\"fas fa-check\"></i>
                                     </span>
-                                    <span class=\"text\">Add Card</span>
+                                    <span class=\"text\">Add 1 to collection</span>
                                 </button>
                                 </form>
                                 <form method=\"post\" action=\"cards.php\"> 
@@ -421,7 +444,7 @@
                                     <span class=\"icon text-white-50\">
                                       <i class=\"fas fa-trash\"></i>
                                     </span>
-                                    <span class=\"text\">Remove Card</span>
+                                    <span class=\"text\">Remove 1 from collection</span>
                                 </button>
                                 </form>
                               </td>";
@@ -458,6 +481,7 @@
                       <th>Price</th>
                       <th>Foil Price</th>
                       <th>Image</th>
+                      <th>Add Card to Deck</th>
                     </tr>
                   </thead>
                   <tfoot>
@@ -475,6 +499,7 @@
                       <th>Price</th>
                       <th>Foil Price</th>
                       <th>Image</th>
+                      <th>Add Card to Deck</th>
                   </tfoot>
                   <tbody>
                       <?php
@@ -499,6 +524,18 @@
                             echo "<td>". $row['usd_price']. "</td>";  
                             echo "<td>". $row['usd_foil_price']. "</td>";  
                             echo "<td><img src=\"". $row['image_uri']. "\" height=\"150\" width=\"100\"></td>";
+                            echo "
+                              <td>
+                                <form method=\"post\" action=\"cards.php\"> 
+                                <input type=\"text\" name=\"addCardToDeck\" value=\"". $row['card_id']. "\" hidden />
+                                <button type=\"submit\" class=\"btn btn-success btn-icon-split\">
+                                    <span class=\"icon text-white-50\">
+                                      <i class=\"fas fa-check\"></i>
+                                    </span>
+                                    <span class=\"text\">Add Card to Deck</span>
+                                </button>
+                                </form>
+                              </td>";
                             echo "</tr>";
                         }
                       ?>

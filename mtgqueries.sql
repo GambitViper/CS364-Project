@@ -35,7 +35,7 @@ INSERT INTO In_Deck(deck_id, card_id, card_amount) VALUES(1, 435152, 1); --repla
 UPDATE In_Deck
 SET card_amount = 1 + (SELECT card_amount
                        FROM In_Deck
-                       WHERE deck_id == 1 AND card_id == 435152) -- replace 2 with new values
+                       WHERE deck_id == 1 AND card_id == 435373) -- replace 2 with new values
 WHERE card_id == 435152 AND deck_id == 1; --replace with card_id and deck_id
 
 -- Delete one card from In_Deck card count
@@ -66,7 +66,7 @@ WHERE deck_id == 1; --replace with deck_id
 
 -- ~~~~~~~~~~~~~~~~~~~IN COLLECTION QUERIES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Add Card to user collection
-INSERT INTO In_Collection(card_id, collection_id, amount) VALUES(435152, 1, 1); --replace 3 with new values
+INSERT INTO In_Collection(card_id, collection_id, amount) VALUES(435373, 1, 1); --replace 3 with new values
 
 --Add one to card count
 UPDATE In_Collection
